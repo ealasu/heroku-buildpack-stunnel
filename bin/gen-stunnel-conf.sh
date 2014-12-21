@@ -20,23 +20,23 @@ for STUNNEL_URL in $STUNNEL_URLS
 do
   eval STUNNEL_URL_VALUE=\$$STUNNEL_URL
   #TODO: Generalize away that "redis" bit in the next line
-  DB=$(echo $STUNNEL_URL_VALUE | perl -lne 'print "$1 $2 $3 $4 $5 $6 $7" if /^redis:\/\/([^:]+):([^@]+)@(.*?):(.*?)\/(.*?)(\\?.*)?$/')
-  DB_URI=( $DB )
-  DB_USER=${DB_URI[0]}
-  DB_PASS=${DB_URI[1]}
-  DB_HOST=${DB_URI[2]}
-  DB_PORT=${DB_URI[3]}
-  DB_NAME=${DB_URI[4]}
-
+  url=$(echo $STUNNEL_URL_VALUE | perl -lne 'print "$1 $2 $3 $4" if /^(.*?)([^\/]+):([0-9]+)(.*)$/')
+  url=( $url )
+  prefix=${url[0]}
+  host=${url[1]}
+  port=${url[2]}
+  suffix=${url[3]}
+  
   echo "Setting ${STUNNEL_URL}_STUNNEL config var"
-
-  export ${STUNNEL_URL}_STUNNEL=redis://$DB_USER:$DB_PASS@127.0.0.1:600${n}/$DB_NAME
+  client_port="600${n}"
+  
+  export ${STUNNEL_URL}=${prefix}localhost:${client_port}${suffix}
 
   cat >> /app/vendor/stunnel/stunnel.conf << EOFEOF
 [$STUNNEL_URL]
 client = yes
 accept = 600${n}
-connect = $DB_HOST:$DB_PORT
+connect = $host:$port
 EOFEOF
 
   let "n += 1"

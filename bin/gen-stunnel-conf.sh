@@ -30,13 +30,13 @@ do
   echo "Setting ${STUNNEL_URL}_STUNNEL config var"
   client_port="600${n}"
   
-  export ${STUNNEL_URL}=${prefix}localhost:${client_port}${suffix}
+  export ${STUNNEL_URL}_STUNNEL="${prefix}localhost:${client_port}${suffix}"
 
   cat >> /app/vendor/stunnel/stunnel.conf << EOFEOF
 [$STUNNEL_URL]
 client = yes
-accept = 600${n}
-connect = $host:$port
+accept = ${client_port}
+connect = ${host}:${port}
 EOFEOF
 
   let "n += 1"
